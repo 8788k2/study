@@ -20,7 +20,7 @@ roslaunch turtlebot3_gazebo turtlebot3_world.launch
 ```bash
 roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
 ```
-**gmapping**이란 ROS에서 제공하는 **SLAM(Simuktaneous Localizatin And mapping)** 툴이다. 아래의 코드로 실행할 수 있다.
+**gmapping**이란 ROS에서 제공하는 **SLAM(Simultaneous Localizatin And Mapping)** 툴이다. 아래의 코드로 실행할 수 있다.
 ```bash
 roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
 ```
@@ -53,5 +53,5 @@ gazebo상의 터틀봇 위치로 네비게이션 상의 터틀봇 위치를 설�
 ![initaial pose](images/initial_pose.gif)
 
 ### 목적지 설정 및 자율주행
-목적지와 바라볼 방향을 내비게이션 상에서 지정하면 gazebo의 터틀봇이 목적지까지 자율주행하는 걸 확인할 수 있다. 
+**목적지와 바라볼 방향을 내비게이션 상에서 지정하면 gazebo의 터틀봇이 목적지까지 자율주행하는 걸 확인할 수 있다.**
 ![automated driving](images/automated_driving.gif)
