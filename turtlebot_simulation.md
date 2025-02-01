@@ -12,7 +12,7 @@ export TURTLEBOT3_MODEL=burger
 ```bash
 roslaunch turtlebot3_gazebo turtlebot3_world.launch
 ```
-6개의 장애물을 가진 기본 터틀봇 월드와 터틀봇 버거를 확인할 수 있다.
+9개의 장애물을 가진 기본 터틀봇 월드와 터틀봇 버거를 확인할 수 있다.
 ![gazebo 실행화면](/images/gazebo_example_5.png)
 
 ## 2. gmapping을 이용한 SLAM
@@ -37,7 +37,7 @@ gazebo상의 터틀봇을 조작하면 gmapping에서의 터틀봇 역시 움직
 rosrun map_server map_saver -f ~/map
 ```
 
-## 3.Navigation을 이용한 자율주행 구현 
+## 3. Navigation을 이용한 자율주행 구현 
 ROS 기본 제공 내비게이션을 이용하면 터틀봇의 초기위치와 목적지를 설정하고 자율주행을 구현할 수 있다.
 아래의 코드로 내비게이션을 실행하고 아까 저장한 맵을 불러온다.
 ```bash
