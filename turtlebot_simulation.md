@@ -1,6 +1,9 @@
 # Turtlebot Simulation 과제
 ## 1. gazebo를 이용한 가상 터틀봇 시뮬레이션
-가상머신 **VMware**를 통해 **Ubuntu 20.04**의 리눅스 환경을 구현하였으며 **ROS Noetic** 버전을 이용하였다.
+|SW|Version|
+|--|--|
+|<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">|20.04|
+|<img src="https://img.shields.io/badge/ROS-22314E?style=for-the-badge&logo=ROS&logoColor=white" /> |Neotic|
 
 ~/.bashrc에 아래의 코드를 추가하면 매번 터틀봇의 모델을 설정할 필요 없이 항상 burger를 불러올 수 있다.
 ```bash
