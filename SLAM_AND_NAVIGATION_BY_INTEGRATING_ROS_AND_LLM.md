@@ -5,11 +5,15 @@
 사용자 입력 → ChatGPT (LLM) → ROS 2 노드 → TurtleBot3 제어 (`cmd_vel`)
 ```
 
-**생각나는 포인트들**
+## 생각나는 포인트들
 
-영어? 한국어? 어떤 언어 특화 
-대상 누구? 쓰임새
+**영어? 한국어? 어떤 언어 특화 대상 누구? 쓰임새**
 
+**같은 명령어 계속 호출 -> 비효율적 수정**
+
+**정의된 명령어가 아니라 llm이 스스로 cmd_vel값을 실시간으로 조작하게 만들 수 있을까?**
+
+**환경과 llm 간 소통은? 장애물 인식 등** 
 ## 1. 환경설정
 ubuntu 22.04...
 vscode...
@@ -171,6 +175,8 @@ if __name__ == '__main__':
     main()
 ```
 
+3.2.2 노드를 실행하기 위한 준비
+
 setup.py (/ros2_ws/src/llm_ros_bridge/setup.py) 수정
 ```bash
 from setuptools import find_packages, setup
@@ -223,10 +229,120 @@ ros2 run llm_ros_bridge llm_ros_node
 
 출력의 의미
 
+...
+
 가제보 실행
 
-chat gpt에게 명령 입력
+...
+
+### 3.3 chat gpt에게 명령 입력
 ```bash
 ros2 topic pub /llm_request std_msgs/msg/String "{data: 'move forward'}"
+```
+
+
+
+
+### advanced code
+```bash
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+from geometry_msgs.msg import Twist
+import openai
+import os
+import json
+import time  # 시간 지연을 위한 라이브러리
+
+class LLMROSBridge(Node):
+    def __init__(self):
+        super().__init__('llm_ros_bridge')
+
+        # OpenAI API 클라이언트 생성
+        self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        if not os.getenv("OPENAI_API_KEY"):
+            self.get_logger().error("❌ OpenAI API Key is missing! Set it with 'export OPENAI_API_KEY=your_key_here'")
+            return
+
+        # ROS 2 퍼블리셔 (`cmd_vel`을 통해 로봇 제어)
+        self.vel_publisher = self.create_publisher(Twist, 'cmd_vel', 10)
+
+        # ROS 2 구독 (`llm_request` 토픽을 구독하여 사용자 명령 받기)
+        self.subscription = self.create_subscription(
+            String,
+            'llm_request',
+            self.llm_callback,
+            10)
+
+        self.get_logger().info("✅ LLM ROS Bridge Node Initialized (Direct cmd_vel control enabled)")
+
+    def llm_callback(self, msg):
+        """LLM을 호출하여 자연어 명령을 cmd_vel 시퀀스로 변환"""
+        user_input = msg.data.strip()
+        self.get_logger().info(f"📩 User Command Received: {user_input}")
+
+        try:
+            # OpenAI API를 호출하여 cmd_vel 값을 직접 생성
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{
+                    "role": "user",
+                    "content": f"""
+                    Convert the following command into a sequence of ROS 2 Twist messages:
+                    '{user_input}'.
+                    Output in JSON format as a list of movement commands.
+                    Example format:
+                    [
+                        {{"linear": {{"x": 0.2, "y": 0.0, "z": 0.0}}, "angular": {{"x": 0.0, "y": 0.0, "z": 0.0}}, "duration": 5}},
+                        {{"linear": {{"x": 0.0, "y": 0.0, "z": 0.0}}, "angular": {{"x": 0.0, "y": 0.0, "z": 0.5}}, "duration": 2}}
+                    ]
+                    """
+                }]
+            )
+
+            movement_sequence = json.loads(response.choices[0].message.content)
+            self.execute_movement_sequence(movement_sequence)
+
+        except Exception as e:
+            self.get_logger().error(f"❌ OpenAI API Request Failed: {e}")
+
+    def execute_movement_sequence(self, sequence):
+        """cmd_vel 값을 받아서 일정 시간 동안 실행"""
+        for step in sequence:
+            twist = Twist()
+            twist.linear.x = step["linear"]["x"]
+            twist.linear.y = step["linear"]["y"]
+            twist.linear.z = step["linear"]["z"]
+            twist.angular.x = step["angular"]["x"]
+            twist.angular.y = step["angular"]["y"]
+            twist.angular.z = step["angular"]["z"]
+
+            self.vel_publisher.publish(twist)
+            self.get_logger().info(f"🚀 Executing cmd_vel: {twist}")
+
+            # 일정 시간 동안 현재 동작 유지
+            time.sleep(step["duration"])
+
+        # 모든 동작이 끝난 후 정지
+        self.stop_robot()
+
+    def stop_robot(self):
+        """모든 동작 후 로봇 정지"""
+        twist = Twist()
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0
+        self.vel_publisher.publish(twist)
+        self.get_logger().info("🛑 Stopping robot")
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = LLMROSBridge()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
 ```
 
