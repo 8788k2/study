@@ -9,7 +9,7 @@
 
 **영어? 한국어? 어떤 언어 특화 대상 누구? 쓰임새**
 
-**같은 명령어 계속 호출 -> 비효율적 수정**
+**~~같은 명령어 계속 호출 -> 비효율적 수정~~ -> 해결완료**
 
 **정의된 명령어가 아니라 llm이 스스로 cmd_vel값을 실시간으로 조작하게 만들 수 있을까?**
 
@@ -215,7 +215,7 @@ chmod +x ~/ros2_ws/src/llm_ros_bridge/llm_ros_bridge/llm_ros_node.py
 echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
-colcon build 실행
+**colcon build 실행**
 ```bash
 cd ~/ros2_ws
 colcon build --packages-select llm_ros_bridge
@@ -238,12 +238,18 @@ ros2 run llm_ros_bridge llm_ros_node
 ### 3.3 chat gpt에게 명령 입력
 ```bash
 ros2 topic pub /llm_request std_msgs/msg/String "{data: 'move forward'}"
+
+ros2 topic pub /llm_request std_msgs/msg/String "{data: 'stop'}"
+
+ros2 topic pub --once /llm_request std_msgs/msg/String "{data: 'move forward'}"
+
+ros2 topic pub --once /llm_request std_msgs/msg/String "{data: 'stop'}"
 ```
+명령을 계속 퍼블리시하여 토큰을 소모하는 문제 해결
 
+여기까지 설명한 코드에서는 앞으로가, 멈춰 등의 제한적인 제어만 가능하다.
 
-
-
-### advanced code
+### 4. advanced code
 ```bash
 import rclpy
 from rclpy.node import Node
@@ -345,4 +351,19 @@ def main(args=None):
 if __name__ == '__main__':
     main()
 ```
+위 코드를 노드로 이용하면 보다 복잡한 제어가 가능할 것으로 기대된다.
+예를 들어 "앞으로 5초동안 가다가 좌회전하고 다시 앞으로 2초 동안 가"와 같은 제어가 가능하다.
 
+
+
+
+
+
+빈 가제보 월드 실행
+```bsah
+ros2 launch turtlebot3_gazebo empty_world.launch.py
+```
+가제보 월드 종료 후에는 아래의 코드로 가제보를 초기화 시켜주면 불필요한 오류를 방지할 수 있다.
+```bash
+killall -9 gzserver gzclient
+```
