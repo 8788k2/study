@@ -282,7 +282,7 @@ if __name__ == '__main__':
 ### 2.1 코드 포인트 별 의도 설명
 
 #### 2.1.1 ai 호출
-open ai키를 불러와 
+저장된 open ai키를 불러온다. 
 ```bash
 self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
