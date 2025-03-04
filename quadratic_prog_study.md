@@ -1,0 +1,326 @@
+# Quadratic Programing
+제어특강 2주차 2강에 배운 내용을 정리하는 것을 목표로 한다.
+## 1.  foward euler method
+주어진 미분방정식을 차분방정식의 형태로 변환하는 방법이다. 
+
+간단한 1차 선형 미분방정식을 예로 설명하겠다. 
+
+$$
+\frac{dy(t)}{dt} + a y(t) = b u(t) + e(t)
+$$
+
+여기서,
+
+y(t) : 출력 신호 (예: 시스템의 상태)
+
+u(t) : 입력 신호 (예: 제어 입력)
+
+e(t) : 외란 (disturbance) 또는 노이즈
+
+a,b : 시스템 파라미터
+
+샘플링 주기 T를 도입하여 t에 대한 연속 미분 방정식을 이산화된 시간 변수 n 또는 k 변환하는 것이 목표이다.
+
+$$
+\frac{dy(t)}{dt} \approx \frac{y(n+1) - y(n)}{T}
+$$
+이를 원래 연속 미분방정식에 대입
+$$
+\frac{y(n+1) - y(n)}{T} + a y(n) = b u(n) + e(n)
+$$
+양변에 T를 곱하면
+$$
+y(n+1) - y(n) + a T y(n) = T b u(n) + T e(n)
+$$
+
+위 식을 잘 정리한 후 계수를 다시 정의하면 다음과 같은 차분방정식을 얻을 수 있다. 
+$$
+y(n+1) + a y(n) = b u(n) + e(n)
+$$
+
+비선형 고차 미분 방정식의 경우에도 선형화 시킨 후 연립 1차 미분 방정식으로 표현가능하기에 넓게 사용될 수 있다.
+
+
+## 2. quadratic form
+일반적인 이차형식($x^T H x$)이 $x$의 원소들에 대한 2차함수 꼴로 나타내짐을 보이자.
+
+$x$는 크기가 n x 1인 열벡터, $H$는 크기가 n x n인 정방행렬이라고 가정하고 연산을 전개하면 다음과 같이 표현할 수 있다.
+$$
+x^T H x =
+\begin{bmatrix}
+x_1 & x_2 & \dots & x_n
+\end{bmatrix}
+\begin{bmatrix}
+H_{11} & H_{12} & \dots & H_{1n} \\
+H_{21} & H_{22} & \dots & H_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+H_{n1} & H_{n2} & \dots & H_{nn}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\
+x_n
+\end{bmatrix} \\
+=\sum_{i=1}^{n} \sum_{j=1}^{n} H_{ij} x_i x_j
+$$
+**그러면 $x$의 모든 원소쌍 $(x_i, x_j)$ 조합에 대해 가중치 $H_{ij}$가 곱해진 형태로 나타나진다.** 
+
+**즉 $x$의 모든 원소 각각에 대한 스칼라 이차식으로 표현된다!**   
+
+n = 2일 때의 예제 
+$$
+x =
+\begin{bmatrix}
+x_1 \\
+x_2
+\end{bmatrix}, \quad
+H =
+\begin{bmatrix}
+H_{11} & H_{12} \\
+H_{21} & H_{22}
+\end{bmatrix}
+$$
+
+$$
+x^T H x =
+\begin{bmatrix}
+x_1 & x_2
+\end{bmatrix}
+\begin{bmatrix}
+H_{11} & H_{12} \\
+H_{21} & H_{22}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\
+x_2
+\end{bmatrix}
+$$
+위를 전개하면 
+$$
+x_1 H_{11} x_1 + x_1 H_{12} x_2 + x_2 H_{21} x_1 + x_2 H_{22} x_2
+$$
+즉 다음과 같이 각 변수들에 대한 이차식으로 표현됨을 확인할 수 있다.
+$$
+x^T H x = H_{11} x_1^2 + H_{22} x_2^2 + H_{12} x_1 x_2 + H_{21} x_2 x_1
+$$
+
+
+
+
+
+
+
+## 3. System Identification
+어떤 실험을 통해 f와 g의 상관관계 그래프를 이산적으로 얻었다고 하자. 해당 관계가 어떤 함수 모델을 따를 것인지 추정하는 것이 목표이다. (선형회귀식이 간단한 1차 그래프로 근사하는 방식이다.) 
+
+1차 선형 차분방정식을 토대로 설명하겠다.
+
+$$
+y(n+1) + a y(n) = b u(n) + e(n)
+$$
+
+이산적으로 주어진 u(1),...,u(4) and y(1),...,y(5)에 대해
+
+위 방정식을 토대로 아래의 방정식이 성립함을 알 수 있다.
+$$
+\underbrace{
+\begin{bmatrix}
+\hat{e}(1) \\
+\hat{e}(2) \\
+\hat{e}(3) \\
+\hat{e}(4)
+\end{bmatrix}
+}_{E}
+=
+\underbrace{
+\begin{bmatrix}
+y(2) \\
+y(3) \\
+y(4) \\
+y(5)
+\end{bmatrix}
+}_{Y}
+-
+\underbrace{
+\begin{bmatrix}
+- y(1) & u(1) \\
+- y(2) & u(2) \\
+- y(3) & u(3) \\
+- y(4) & u(4)
+\end{bmatrix}
+}_{\Phi}
+\underbrace{
+\begin{bmatrix}
+\hat{a} \\
+\hat{b}
+\end{bmatrix}
+}_{X}
+$$
+
+여기서 e를 최소화하는 $\hat{a}$, $\hat{b}$ 즉 X벡터를 찾는다면 우리는 시스템 모델을 잘 추정하였다고 할 수 있다.
+
+위 방정식을 아래와 같이 다시 쓴다.
+$$
+Y - \Phi x = E
+$$
+
+e를 최소화한다는 건 e의 제곱의 합을 최소화한다고 정의할 수 있다. 그러면 아래의 식을 얻을 수 있다.
+$$
+\min_{x} \sum_{n=1}^{N} \hat{e}^2(n) = \min_{x} E^T E
+$$
+위의 방정식의 $E$에 ($Y - \Phi x$)를 대입하면 아래와 같이 전개 할 수 있다.
+$$
+\min_{x} (Y - \Phi x)^T (Y - \Phi x)\\
+
+= \min_{x} Y^T Y + x^T \Phi^T \Phi x - x^T \Phi^T Y - Y^T \Phi x \\
+$$
+
+
+여기서 아래와 같이 새로운 계수들을 정의하자
+$$
+H = 2\Phi^T \Phi\\
+c^T = -2\Phi^T Y\\
+d = Y^T Y
+$$
+
+참고로 $- x^T \Phi^T Y - Y^T \Phi x =-2\Phi^T Y$가 성립함은 스칼라의 전치행렬이 자신과 같음을 이용하여 증명할 수 있다. 
+
+
+새로운 변수들을 위의 방정식에 대입하면 최종적으로 아래의 식을 얻을 수 있다.
+$$
+\min_{x} E^T E = \min_{x} d + \frac{1}{2} x^T H x + c^T x
+$$
+
+최종적으로 얻어진 저 식은 변수에 대한 이차항 $\frac{1}{2} x^T H x$, 선형항 $c^T x$ 최적화 문제와 상관 없는 상수항 $d$로 표현되는 쿼트래틱 폼이다.
+
+**아래의 시스템을 안정하게 하는 제약조건과 위 문제를 함께 쿼드래틱 프로그래밍 문제로 보고 해결할 수 있다!** 
+$$
+-0.99 \leq \hat{a} \leq 0.99
+$$
+
+
+
+
+## 3. MPC (Model Predictive Control)
+원하는 경로 즉, 요구 상태 벡터 $\bar{X}$ 존재 
+
+그리고 이산 상태방정식 꼴로 나타내진 시스템이 존재 
+$$
+X(k+1) = F(X(k),u(k))
+$$
+
+$k+1$, $k+2$, ... $k + N_p$까지의 $\bar{X}$와 $X$의 차 최소로 하는 $k$시점부터 $k+N_p-1$시점까지의 $U$를 찾는 것이 MPC의 핵심
+
+$$
+X = \begin{bmatrix}
+x(k+1) \\
+\vdots \\
+x(k+N_p)
+\end{bmatrix}\\
+
+U = \begin{bmatrix}
+u(k) \\
+\vdots \\
+u(k+N_p-1)
+\end{bmatrix}
+$$
+
+여기서 $N_p$를 호라이즌 (샘플 스텝의 개수)이라 한다.
+
+현실에서는 요구되는 상태와 실제 상태의 차 ($X_e$) 뿐 아니라 입력 자체 역시 최소화하는게 좋으므로 (리소스 최소화) 다음과 같이 최적화 문제를 정의할 수 있다. 
+$$
+\min_{U} \sum U^TRU + X_e^TPX 
+$$
+
+**그렇게 구한 입력 중 처음 값, $u(k)$를 다시 시스템에 넣고 상태 $x(k+1)$를 얻는다. 그 다음 위 문제와 마찬가지로 $k+1$ 시텀부터 $k+N_p$까지의 최적화 문제를 다시 풀고 상태 $x(k+2)$를 얻는다. 이를 반복하여 원하는 경로와 실제 경로를 최소화해나가는 것이 MPC이다.**
+
+새로운 상태를 반복적으로 얻어 새롭게 문제를 푸는 이유는 실제 시스템에서는 상태 오차가 발생할 수 있고 그러면 입력을 줄 때마다 오차가 계속 쌓여 결국 요구 경로와는 다른 경로가 그려질 수 있기 때문이다.
+
+업데이트된 상태를 계속 피드백해줌으로써 강력한 예측 모델 구축 가능하다는 것이 장점이다. 
+
+### 3.1 Linear system MPC 
+아래와 같이 이산 상태 방정식으로 정의된 선형 시스템을 생각해보자.
+$$
+x(k+1) = A x(k) + B u(k)
+$$
+$$
+y(k) = C x(k)
+$$
+
+우리의 목표는 y를 0으로 수렴시키고 자기 자신도 최소화하는 $u$를 찾는 것이다. 
+
+$N_p$ 호라이즌이 주어지면 최적화의 대상인 $k$ 시점에서부터 $k + N_p -1$ 까지의 $\tilde{u}$와 $k+1$부터 $k+N-p$까지의 $\tilde{y}$에 대해 아래와 같은 방정식을 얻을 수 있다.
+
+
+$$
+\begin{bmatrix}
+x(k+1|k) \\
+\vdots \\
+x(k+N_p|k)
+\end{bmatrix}
+=
+\begin{bmatrix}
+A \\
+\vdots \\
+A^{N_p}
+\end{bmatrix}
+x(k)
++
+\begin{bmatrix}
+B & 0 & \dots & 0 \\
+AB & B & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+A^{N_p-1}B & A^{N_p-2}B & \dots & B
+\end{bmatrix}
+\begin{bmatrix}
+u(k|k) \\
+\vdots \\
+u(k+N_p-1|k)
+\end{bmatrix}
+$$
+
+$$
+\begin{bmatrix}
+y(k+1|k) \\
+\vdots \\
+y(k+N_p|k)
+\end{bmatrix}
+=
+\begin{bmatrix}
+C & 0 & \dots & 0 \\
+0 & C & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \dots & C
+\end{bmatrix}
+\begin{bmatrix}
+x(k+1|k) \\
+\vdots \\
+x(k+N_p|k)
+\end{bmatrix}
+$$
+
+$$
+\tilde{x} = \tilde{A} x(k) + \tilde{B} \tilde{u}
+$$
+
+$$
+\tilde{y} = \tilde{C} \tilde{x} = \tilde{C} \tilde{A} x(k) + \tilde{C} \tilde{B} \tilde{u}
+$$
+
+입력에 대해서 가중치 $\lambda$를 준다면,
+
+최종적으로 우리가 풀어야할 최적화문제는 아래와 같이 정의된다. 
+$$
+\min_{\tilde{u}}\ \tilde{y}^T \tilde{y} + \lambda \tilde{u}^T \tilde{u}
+$$
+
+$|\tilde{u}| \leq 0.25$와 같이 제약 조건을 줄 수도 있다.
+
+
+
+
+
+
+
+
