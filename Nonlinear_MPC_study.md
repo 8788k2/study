@@ -133,3 +133,58 @@ NMPC 문제를 정의할 수 있게 해주며 SQP와 Interior Point OPTimizer �
 IPOPT등의 내부점 최적화 솔버를 활용하여 MPC 문제를 해결함
 
 ## Interior Point Methods
+MPC에서 최적화의 대상이 될 입력벡터 $U$와 상태벡터 $X$, 그리고 그에 대한 새로운 벡터 $z$를 아래와 같이 정의하자.
+$$
+U =
+\begin{bmatrix} 
+    u_0 \\ 
+    \vdots \\ 
+    u_{N-1} 
+\end{bmatrix}, 
+\quad
+X =
+\begin{bmatrix} 
+    x_1 \\ 
+    \vdots \\ 
+    x_N 
+\end{bmatrix}, 
+\quad
+z =
+\begin{bmatrix} 
+    X \\ 
+    U 
+\end{bmatrix}
+$$
+그러면 NMPC 문제를 비선형 최적화 문제로 바꾸어 아래와 같이 간단하게 표현할 수 있다.
+$$
+\min \Phi(z)
+$$
+
+
+
+비선형 상태방정식의 정의로부터 equation of motion을 제약조건으로서 유도할 수 있다.
+$$
+G(z) = 0 \quad \Rightarrow \quad x_{k+1} - f(x_k, u_k) = 0, \quad k = 0, \dots, N-1
+$$
+
+상태와 입력이 만족해야할 부등식 형태의 제약 조건도 아래와 같이 설정할 수 있다.
+$$
+H(z) \leq 0
+$$
+
+여기서 Interior Point Methods(IPM)은 아래와 같이 Slack 변수 $s$를 도입하고, 로그 장볍 함수를 추가하여 문제를 변형시킨다.
+$$
+\min \Phi(z) - \sigma \sum_{i=1}^{n_H} \log(s_i)
+$$
+
+$$
+\mathcal{L}(z, s, \lambda, \mu) = \Phi(z) - \sigma \sum_{i=1}^{n_H} \log(s_i) + \lambda^T G(z) + \mu^T (H(z) + s)
+$$
+
+$$
+\nabla_z \mathcal{L} = \nabla_z \Phi(z) + (\nabla_z G(z))^T \lambda + (\nabla_z H(z))^T \mu = 0
+$$
+
+$$
+\nabla_s \mathcal{L} = -\sigma S^{-1} e + \mu = 0 \Rightarrow -\sigma e + S \mu = 0
+$$
