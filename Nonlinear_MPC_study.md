@@ -128,7 +128,7 @@ Complementarity Methods
 불안정성을 해결하기 위해 1차기법과 결합하여 사용되기도 함
 
 파이썬에서 NMPC를 푸는 라이브러리인 CasADi는 
-NMPC 문제를 정의할 수 있게 해주며 
+NMPC 문제를 정의할 수 있게 해주며 SQP와 Interior Point OPTimizer 둘 다 지원
 
 IPOPT등의 내부점 최적화 솔버를 활용하여 MPC 문제를 해결함
 
