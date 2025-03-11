@@ -15,6 +15,7 @@ h(x_k, u_k) \leq 0
 $$
 
 미래 $N$개의 시간 스텝 동안 비용을 최소화하는 최적의 제어입력을 찾는 것이 목표이다.
+
 따라서 아래와 같은 최적화 문제를 정의한다.
 
 $$
@@ -25,26 +26,28 @@ $$
 $$
 $z$: 최적화 변수 벡터, 최적화 입력 벡터 $u$와 상태 벡터 $x$를 포함
 
-$G(z, x(t))$와 $H(z, x(t))$는 제약 조건
-
-다음으로 $F$를 잘 정의해보도록 하자
-
-Nonlinear MPC를 위해서는 아래와 같이  
-$$
-\min \ell_N (x_N) + \sum_{k=0}^{N-1} \ell_N (x_N)
-$$
-$\ell_N (x_N)$: terminal cost 
-
-$\ell_N (x_N)$: stage cost
+$G(z, x(t))$, $H(z, x(t))$: 제약 조건
 
 
-
-
-
-
+Nonlinear MPC를 위해서는 아래와 같이 $V_N(\{ x_k \}, \{ u_k \})$ 를 cost function을 정의할 수 있다.
 $$
 V_N (\{ x_k \}, \{ u_k \}) = F(x_N) + \sum_{k=0}^{N-1} L(x_k, u_k)
 $$
+
+$F(x_N)$: terminal cost 
+
+$L (x_k,u_k)$: stage cost
+
+
+참고로 여기서 terminal cost를 따로 정의해준 이유가 있다.
+
+어떤 최적화 문제가 있으면, N스텝 너머에도 최적화 대상이 있을 것이다. 그러면 N을 초기조건으로 갖는 무한합으로 표현되는 cost function이 있을 것이고 해당 값이 수렴한다는 가정하에(애초에 수렴하지 않으면 최적화 불가능한 시스템이다.) $F(x_N)$이라고 써줄 수 있다.
+
+해당 비용함수를 따로 정의하여 포함시키는 이유는 해당시스템의 stability, feasibility 등을 결정하는 중요한 변수가 되기 때문이다.
+
+
+
+다시 주제로 돌아와서 비선형 MPC는 초기 상태 $x_0$에서부터 $N-1$ 번쨰 후 스텝까지의 입력 중 제약조건을 만족하면서 $V_N$이 최소가 되게 하는 입력 벡터 $u$를 찾는 문제로 볼 수 있다.
 
 $$
 V_N^{opt}(x_0) \triangleq \min V_N (\{ x_k \}, \{ u_k \})
@@ -61,7 +64,72 @@ $$
 $$
 h_j(x_k, u_k) \leq 0, \quad j = 1, \dots, n_h
 $$
-
+그렇게 해서 구한 $u$의 해 중 첫번쨰 스텝의 입력만 가져와서 시스템의 입력으로 쓰고 다음 스텝부터 다시 MPC 문제를 풀어준다.
 $$
 u_{MPC}(x_0) = u_0^*
 $$
+
+
+## Nonlinear MPC의 종류
+### Global optimizers 
+특징
+```
+stochastic 방식이 포함될 수 있음
+robust하고 global한 최적해를 찾을 수 있음
+```
+대표적 기법
+```
+Genetic Algorithms
+Simulated Annealing
+Pattern Search
+Swarm Methods ex:PSO
+```
+계산 속도가 느려 MPC와 같은 실시간 시스템에 적용하기 어려움
+
+### first order methods
+특징
+```
+local 최적해에 수렴
+미분정보만 필요
+local 선형 수렴성을 가짐
+```
+
+대표적 기법
+```
+Projected Gradient 
+Multiplicative updates (M3, PQP 등)
+Multiplier 기법 (Augmented Lagrangian)
+ -ADMM (Alternating Direction Method of Multipliers)
+ -Dual Ascent
+```
+
+계산속도가 비교적 빠르고 선형 수렴성 가지므로 MPC 문제 해결에 적합
+
+### Second order methods
+특징
+```
+계산 속도가 빠름
+불안정함(최적해에서 멀리 떨어진 경우 수렴이 어려울 수 있음)
+Hessian 정보 활용
+로컬에서 빠르게 수렴
+```
+
+대표적 기법
+```
+SQP (Sequential Quadratic Programming)
+Interior Point Methods 
+Complementarity Methods
+ -Semi-smooth 
+ -Non-interior Homotopy
+```
+
+가장 널리쓰이는 NMPC 기법임 
+
+불안정성을 해결하기 위해 1차기법과 결합하여 사용되기도 함
+
+파이썬에서 NMPC를 푸는 라이브러리인 CasADi는 
+NMPC 문제를 정의할 수 있게 해주며 
+
+IPOPT등의 내부점 최적화 솔버를 활용하여 MPC 문제를 해결함
+
+## Interior Point Methods
