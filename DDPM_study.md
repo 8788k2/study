@@ -118,14 +118,37 @@ $$
 
 **$p_θ(x_0)$에 log를 씌우고 -를 붙이면 likelihood가 1에 가까울 수록 점점 더 0에 빠르게 수렴하는 훌륭한 성질의 nagative log likelihood를 잘 정의할 수 있고 그 기댓값을 loss function으로 사용한다.** 
 
-**그러나 직접 loss function을 최적화하기 어려우므로 아래의 부등식이 성립함을 증명하여 우변을 최적화하는 방식으로 자연스럽게 loss function을 최적화하도록 한 것이 기존 논문의 핵심 컨트리뷰션이다.**
+**그러나 직접 loss function을 최적화하기 어려우므로 아래의 부등식이 성립함을 증명하여 우변을 최적화하는 방식으로 자연스럽게 loss function을 최적화하도록 한 것이 기존 2015년 논문의 핵심 컨트리뷰션이다.**
 $$
 \mathbb{E}[-\log p_{\theta}(x_0)] \leq \mathbb{E}_q \left[ -\log \frac{p_{\theta}(x_{0:T})}{q(x_{1:T} | x_0)} \right]
 $$
-위 식의 우변을 KL Divergence의 합으로 표현될 수 있으므로 clsed form으로 잘 해석이 가능하다.
+위 식의 우변은 아래와 같이 KL Divergence의 합으로 표현될 수 있으므로 clsed form으로 잘 해석이 가능하다.
 $$
 L = \mathbb{E}_q \left[ D_{KL}(q(x_T | x_0) \parallel p(x_T)) + \sum_{t>1} D_{KL}(q(x_{t-1} | x_t, x_0) \parallel p_{\theta}(x_{t-1} | x_t)) - \log p_{\theta}(x_0 | x_1) \right]
 $$
+
+
+$$
+\mathbb{E}_q \left[ 
+\underbrace{D_{KL} ( q(\mathbf{x}_T | \mathbf{x}_0) \parallel p(\mathbf{x}_T) )}_{L_T}
++ \sum_{t>1} \underbrace{D_{KL} ( q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) \parallel p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t) )}_{L_{t-1}}
+- \underbrace{\log p_{\theta}(\mathbf{x}_0 | \mathbf{x}_1)}_{L_0}
+\right]
+$$
+각항에 대해 설명을 해보자
+
+$L_T$: 마지막 상태$(x_T)$에 대해 확률분포 q와 p의 KL Divergnece를 최소화하는 항
+
+$q(x_T|x_0)$와 $p(x_T)$의 차이를 최소화해야 하는데 $p(x_T)$는 가우시안 분포이므로 앞서 언급했던 $\beta_t$를 조절함으로써 $q(x_T|x_0)$가 가우시안 분포에 가깝도록 조절할 수 있다. 
+
+$L_{t-1}$: 현재 상태($x_t$)가 주어질 때, 이전 상태($x_{t-1}$)가 나올 확률 분포 
+
+
+
+
+
+
+
 
 **$x_0$에서 $x_T$를 생성하는 프로세스의 마르코프 체인은 가우시간 분포를 따른다고 가정하고 $x_T$에서 $x_0$를 복원하는 프로세스에서 확률분포를 학습하여 모델이 $x_0$를 내놓을 확률을 최적화**
 
