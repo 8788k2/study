@@ -109,7 +109,7 @@ end
 ```matlab
 % 비용 함수, k시점에서의 어그먼티드 방정식에서의 u틸다, 초기값 x(k)에 의해 코스트펑션 값이 결정되는 부분에 해당  
 function cost = compute_cost(U, qL, qF, uL_traj, k, dt, horizon, Q, R, P, S)
-    U = reshape(u, 2, horizon); % 최적제어 입력 파트에서 U_init에서 시작하여 U를 생성하면 그 정해진 U에 대해 2 * horizon 행렬로 변환, 후에 uF_k 정할 때 i번째 입력을 쉽게 가져오기 위함
+    U = reshape(U, 2, horizon); % 최적제어 입력 파트에서 U_init에서 시작하여 U를 생성하면 그 정해진 U에 대해 2 * horizon 행렬로 변환, 후에 uF_k 정할 때 i번째 입력을 쉽게 가져오기 위함
     cost = 0;
 
     % k시점부터 (k+ horizon -1)시점까지 그에 해당하는 u값과 초기상태를 이용해서 horizon*1 차원의 e, uF_k, delta_u 생성
@@ -134,7 +134,7 @@ function cost = compute_cost(U, qL, qF, uL_traj, k, dt, horizon, Q, R, P, S)
 
         % 에러 상태 계산
         e = qF -qL;
-        e(3) = normalIze_angle(e(3))
+        e(3) = normalize_angle(e(3))
 
         % 비용 함수 업데이트
         cost = cost + e' * Q * e + uF_k' * R * uF_k; 
